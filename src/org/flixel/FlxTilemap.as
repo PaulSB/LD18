@@ -159,8 +159,10 @@ package org.flixel
 			width = widthInTiles*_tileWidth;
 			height = heightInTiles*_tileHeight;
 			_rects = new Array(totalTiles);
-			for(i = 0; i < totalTiles; i++)
+			for (i = 0; i < totalTiles; i++)
+			{
 				updateTile(i);
+			}
 
 			//Pre-set some helper variables for later
 			_screenRows = Math.ceil(FlxG.height/_tileHeight)+1;
