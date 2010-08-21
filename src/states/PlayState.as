@@ -41,18 +41,20 @@ package states
 			
 			m_tPlayer = new Player(40, 320);
 			
-			s_layerBackground = new FlxGroup;
-			s_layerBackground.add(m_tMapMain);
 			s_layerPlayer = new FlxGroup;
 			s_layerPlayer.add(m_tPlayer);
+			s_layerForeground = new FlxGroup;
+			s_layerForeground.add(m_tMapMain);
 			
-			add(s_layerBackground);
 			add(s_layerPlayer);
+			add(s_layerForeground);
 		}
 		
-/*		override public function update():void
+		override public function update():void
 		{
+			s_layerPlayer.collide(m_tMapMain);
+			
 			super.update();
-		}*/
+		}
 	}
 }
