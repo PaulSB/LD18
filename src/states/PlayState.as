@@ -31,8 +31,12 @@ package states
 		[Embed(source = '../../data/world/floor.png')] private var imgFloor:Class;
 		[Embed(source = '../../data/world/entry_point.png')] private var imgEnemyPoint:Class;
 		
+		[Embed(source = '../../data/objects/bullet_v.png')] private var imgBulletVert:Class;
+		[Embed(source = '../../data/objects/bullet_h.png')] private var imgBulletHoriz:Class;
+		
 		// Constants
 		private const k_iTileScale:int = 40;
+		private const k_iBulletSpeed:int = 200;
 		
 		// Render layers
 		static private var s_layerBackground:FlxGroup;
@@ -45,6 +49,7 @@ package states
 		
 		private var m_tPlayer:Player;
 		private var m_tEnemies:Array;	// To be filled with Enemy objects
+		private var m_tBullets:Array;	// To be filled with FlxSprite objects
 		
 		override public function create():void
 		{
@@ -63,6 +68,8 @@ package states
 			
 			m_tEnemies = new Array;
 			m_tEnemies.push(new Enemy(tSpawnLoc.x, tSpawnLoc.y));
+			
+			m_tBullets = new Array;
 			
 			// Add objects to layers
 			s_layerBackground = new FlxGroup;
@@ -87,11 +94,69 @@ package states
 			// Player-world collision
 			s_layerPlayer.collide(m_tMapMain);
 			
-			// Enemy-world collision
+			// Enemies
 			for (var i:int = 0; i < m_tEnemies.length; i++)
 			{
+				// Enemy-world collision
 				if (m_tEnemies[i].collide(m_tMapMain) || m_tEnemies[i].collide(s_layerPlayer))
 					m_tEnemies[i].m_bMoving = false;
+					
+				// Enemy bullet spawning
+				if (m_tEnemies[i].m_bShotReady)
+				{
+					var tNewBullet:FlxSprite = new FlxSprite;
+					tNewBullet.fixed = true;
+					switch(m_tEnemies[i].facing)
+					{
+						case FlxSprite.LEFT:
+							tNewBullet.loadGraphic(imgBulletHoriz);
+							tNewBullet.x = m_tEnemies[i].x - tNewBullet.width;
+							tNewBullet.y = m_tEnemies[i].y + (m_tEnemies[i].height - tNewBullet.height) * 0.5;
+							tNewBullet.velocity.x = -k_iBulletSpeed;
+							break;
+						case FlxSprite.RIGHT:
+							tNewBullet.loadGraphic(imgBulletHoriz);
+							tNewBullet.x = m_tEnemies[i].x + m_tEnemies[i].width;
+							tNewBullet.y = m_tEnemies[i].y + (m_tEnemies[i].height - tNewBullet.height) * 0.5;
+							tNewBullet.velocity.x = +k_iBulletSpeed;
+							break;
+						case FlxSprite.UP:
+							tNewBullet.loadGraphic(imgBulletVert);
+							tNewBullet.x = m_tEnemies[i].x + (m_tEnemies[i].width - tNewBullet.width) * 0.5;
+							tNewBullet.y = m_tEnemies[i].y - tNewBullet.height;
+							tNewBullet.velocity.y = -k_iBulletSpeed;
+							break;
+						case FlxSprite.DOWN:
+							tNewBullet.loadGraphic(imgBulletVert);
+							tNewBullet.x = m_tEnemies[i].x + (m_tEnemies[i].width - tNewBullet.width) * 0.5;
+							tNewBullet.y = m_tEnemies[i].y + m_tEnemies[i].height;
+							tNewBullet.velocity.y = +k_iBulletSpeed;
+							break;
+					}
+					
+					m_tBullets.push(tNewBullet);
+					s_layerBackground.add(m_tBullets[m_tBullets.length -1]);
+					
+					m_tEnemies[i].m_fShootTimer = m_tEnemies[i].k_ShotPeriod;
+					m_tEnemies[i].m_bShotReady = false;
+				}
+			}
+				
+			// Bullets
+			for (i = 0; i < m_tBullets.length; i++)
+			{
+				// Bullet-world collision
+				if (m_tBullets[i].collide(m_tMapMain))
+				{
+					m_tBullets[i].kill();
+					s_layerBackground.remove(m_tBullets[i]);
+					m_tBullets.splice(i, 1);
+				}
+				// Bullet-player collision
+				else if (m_tBullets[i].collide(s_layerPlayer))
+				{
+					m_tPlayer.kill();
+				}
 			}
 			
 			super.update();

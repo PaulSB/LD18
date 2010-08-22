@@ -15,9 +15,12 @@ package
 	{
 		[Embed(source = '../data/objects/enemy.png')] private var imgEnemy:Class;
 		
+		public const k_ShotPeriod:Number = 2.0;
 		private const k_MoveSpeed:int = 80;
 		
 		public var m_bMoving:Boolean = false;
+		public var m_bShotReady:Boolean = false;
+		public var m_fShootTimer:Number;
 		
 		private var m_bIsHorizontal:Boolean;
 		private var m_fMoveWaitTimer:Number;
@@ -38,6 +41,7 @@ package
 			play("walk_v");
 			m_bMoving = true;
 			m_fMoveWaitTimer = 0.5;
+			m_fShootTimer = k_ShotPeriod;
 			
 			// Bounding box modifications
 			width -= 4;		offset.x = 2;	x += 2;
@@ -81,6 +85,18 @@ package
 					
 					m_bMoving = true;
 					m_fMoveWaitTimer = 0.5;
+				}
+			}
+			else
+			{
+				// Shooting occurs when moving
+				if (m_fShootTimer > 0)
+				{
+					m_fShootTimer -= FlxG.elapsed;
+				}
+				else
+				{
+					m_bShotReady = true;
 				}
 			}
 			
