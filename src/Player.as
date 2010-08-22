@@ -9,6 +9,7 @@ package
 {
 	// IMPORTS
 	import Math;
+	import flash.geom.Point
 	
 	import org.flixel.FlxG;
 	import org.flixel.FlxSprite;
@@ -19,12 +20,17 @@ package
 		
 		private const k_MoveSpeed:int = 100;
 		
+		public var m_tPlayerPos:Point;
+		public var m_bDoingAction:Boolean = false;
+		
 		private var m_bIsHorizontal:Boolean;
 		
 		public function Player(iX:int, iY:int)
 		{
 			super(iX, iY);
 			loadGraphic(imgPlayer, true, true, 40, 40);
+			
+			m_tPlayerPos = new Point(x + (width * 0.5), y + (height * 0.5));
 			
 			addAnimation("stand_v", [0]);
 			addAnimation("stand_h", [1]);
@@ -108,8 +114,28 @@ package
 					play("stand_v");
 			}
 				
+			// "Action" command
+			m_bDoingAction = (FlxG.keys.SPACE);
 			
 			super.update();
+			
+			// Update centre-position
+			m_tPlayerPos.x = x + (width * 0.5);
+			m_tPlayerPos.y = y + (height * 0.5);
+		}
+		
+		public function isPointInFrontOfPlayer(tPoint:Point):Boolean
+		{
+			var bRet:Boolean = false;
+			switch(facing)
+			{
+				case LEFT:	bRet = (tPoint.x < m_tPlayerPos.x);	break;
+				case RIGHT:	bRet = (tPoint.x > m_tPlayerPos.x);	break;
+				case UP:	bRet = (tPoint.y < m_tPlayerPos.y);	break;
+				case DOWN:	bRet = (tPoint.x > m_tPlayerPos.y);	break;
+			}
+			
+			return bRet;
 		}
 	}
 }

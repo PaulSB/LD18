@@ -9,7 +9,7 @@ package states
 {
 	// IMPORTS
 	import flash.geom.Point;
-	
+
 	import org.flixel.FlxG;
 	import org.flixel.FlxGroup;
 	import org.flixel.FlxSprite;
@@ -37,6 +37,7 @@ package states
 		// Constants
 		private const k_iTileScale:int = 40;
 		private const k_iBulletSpeed:int = 200;
+		private const k_fHackingRange:Number = 60;
 		
 		// Render layers
 		static private var s_layerBackground:FlxGroup;
@@ -97,7 +98,24 @@ package states
 			// Enemies
 			for (var i:int = 0; i < m_tEnemies.length; i++)
 			{
-				// Enemy-world collision
+				// Player hacking attempt
+				if (!m_tEnemies[i].m_bIsTurret)
+				{
+					var tEnemyPos:Point = new Point(m_tEnemies[i].x + (m_tEnemies[i].width * 0.5), m_tEnemies[i].y + (m_tEnemies[i].height * 0.5));
+					if (m_tPlayer.m_bDoingAction && m_tPlayer.isPointInFrontOfPlayer(tEnemyPos)
+												&& Point.distance(m_tPlayer.m_tPlayerPos, tEnemyPos) < k_fHackingRange)
+					{
+						// This enemy is being hacked
+						m_tPlayer.color = 0xd0ffd0;
+						m_tEnemies[i].m_fHackedTime += FlxG.elapsed;
+					}
+					else 
+					{
+						m_tPlayer.color = 0xffffff;
+					}
+				}
+				
+				// Enemy-world/player collision
 				if (m_tEnemies[i].collide(m_tMapMain) || m_tEnemies[i].collide(s_layerPlayer))
 					m_tEnemies[i].m_bMoving = false;
 					
@@ -106,6 +124,7 @@ package states
 				{
 					var tNewBullet:FlxSprite = new FlxSprite;
 					tNewBullet.fixed = true;
+					
 					switch(m_tEnemies[i].facing)
 					{
 						case FlxSprite.LEFT:
@@ -134,10 +153,19 @@ package states
 							break;
 					}
 					
+					if (m_tEnemies[i].m_bIsTurret)
+					{
+						tNewBullet.color = 0x80ff80;	// Hacked bullet of death
+					}
+					else
+					{
+						tNewBullet.health = 0.5;		// Feeble robot bullet
+					}
+					
 					m_tBullets.push(tNewBullet);
 					s_layerBackground.add(m_tBullets[m_tBullets.length -1]);
 					
-					m_tEnemies[i].m_fShootTimer = m_tEnemies[i].k_ShotPeriod;
+					m_tEnemies[i].m_fShootTimer = m_tEnemies[i].k_fShotPeriod;
 					m_tEnemies[i].m_bShotReady = false;
 				}
 			}
@@ -155,7 +183,26 @@ package states
 				// Bullet-player collision
 				else if (m_tBullets[i].collide(s_layerPlayer))
 				{
+					m_tBullets[i].kill();
+					s_layerBackground.remove(m_tBullets[i]);
+					m_tBullets.splice(i, 1);
+					
 					m_tPlayer.kill();
+				}
+				// Bullet-robot collision
+				else if (m_tBullets[i].health > 0.8)
+				{
+					for (var j:int = 0; j < m_tEnemies.length; j++)
+					{
+						if (m_tBullets[i].collide(m_tEnemies[j]))
+						{
+							m_tBullets[i].kill();
+							s_layerBackground.remove(m_tBullets[i]);
+							m_tBullets.splice(i, 1);
+					
+							m_tEnemies[j].kill();
+						}
+					}
 				}
 			}
 			
