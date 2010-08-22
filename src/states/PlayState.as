@@ -12,6 +12,7 @@ package states
 
 	import org.flixel.FlxG;
 	import org.flixel.FlxGroup;
+	import org.flixel.FlxSound;
 	import org.flixel.FlxSprite;
 	import org.flixel.FlxState;
 	import org.flixel.FlxTilemap;
@@ -34,11 +35,18 @@ package states
 		[Embed(source = '../../data/objects/bullet_v.png')] private var imgBulletVert:Class;
 		[Embed(source = '../../data/objects/bullet_h.png')] private var imgBulletHoriz:Class;
 		
+		// SFX
+		[Embed(source = '../../data/sound/shoot.mp3')] private var sfxShoot:Class;
+		[Embed(source = '../../data/sound/hurt.mp3')] private var sfxHurt:Class;
+		[Embed(source = '../../data/sound/spawn.mp3')] private var sfxSpawn:Class;
+		[Embed(source = '../../data/sound/hack.mp3')] private var sfxHack:Class;
+		
 		// Constants
 		private const k_iTileScale:int = 40;
 		private const k_iBulletSpeed:int = 200;
 		private const k_fHackingRange:Number = 60;
 		private const k_fWaveDuration:Number = 10;	// TO DO - this is obviously too small, for testing
+		private const k_iMaxRobots:int = 64;
 		
 		// Render layers
 		static private var s_layerBackground:FlxGroup;			// Floor
@@ -56,6 +64,12 @@ package states
 		
 		private var m_fWaveTimer:Number = 0;
 		
+		// SFX
+		private var m_tSFXshoot:FlxSound;
+		private var m_tSFXhurt:FlxSound;
+		private var m_tSFXspawn:FlxSound;
+		private var m_tSFXhack:FlxSound;
+		
 		override public function create():void
 		{
 			// Initialisation
@@ -69,10 +83,19 @@ package states
 			m_tEntryPoint = new FlxSprite(tSpawnLoc.x, tSpawnLoc.y);
 			m_tEntryPoint.loadGraphic(imgEnemyPoint);
 			
-			m_tPlayer = new Player(k_iTileScale * 1, k_iTileScale * 8);
+			m_tPlayer = new Player(k_iTileScale * 8, k_iTileScale * 8);
 			
 			m_tEnemies = new Array;		
 			m_tBullets = new Array;
+			
+			m_tSFXshoot = new FlxSound;
+			m_tSFXshoot.loadEmbedded(sfxShoot);
+			m_tSFXhurt = new FlxSound;
+			m_tSFXhurt.loadEmbedded(sfxHurt);
+			m_tSFXspawn = new FlxSound;
+			m_tSFXspawn.loadEmbedded(sfxSpawn);
+			m_tSFXhack = new FlxSound;
+			m_tSFXhack.loadEmbedded(sfxHack);
 			
 			// Add objects to layers
 			s_layerBackground = new FlxGroup;
@@ -122,6 +145,8 @@ package states
 					{
 						// This enemy is being hacked
 						m_tEnemies[i].m_fHackedTime += FlxG.elapsed;
+						if (!m_tSFXhack.playing)
+							m_tSFXhack.play();
 					}
 					else 
 					{
@@ -202,6 +227,8 @@ package states
 					
 					m_tEnemies[i].m_fShootTimer = m_tEnemies[i].k_fShotPeriod;
 					m_tEnemies[i].m_bShotReady = false;
+					
+					m_tSFXshoot.play();
 				}
 			}
 				
@@ -224,6 +251,7 @@ package states
 					m_tBullets.splice(i, 1);
 					
 					m_tPlayer.kill();
+					m_tSFXhurt.play();
 					break;
 				}
 				else
@@ -290,10 +318,15 @@ package states
 		
 		public function spawnWaves():void
 		{
+			if (m_tEnemies.length >= k_iMaxRobots)
+				return;
+			
 			m_tEnemies.push(new Enemy(m_tEntryPoint.x, m_tEntryPoint.y));
 			
 			s_layerForeground.add(m_tEnemies[m_tEnemies.length - 1]);
 			s_layerSuperForeground.add(m_tEnemies[m_tEnemies.length - 1].m_tHackBar);
+			
+			m_tSFXspawn.play();
 		}
 	}
 }
