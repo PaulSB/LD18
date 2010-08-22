@@ -7,6 +7,8 @@
 
 package  
 {
+	import flash.geom.Rectangle;
+	
 	import org.flixel.FlxG;
 	import org.flixel.FlxSprite;
 	import org.flixel.FlxU;
@@ -14,6 +16,7 @@ package
 	public class Enemy extends FlxSprite
 	{
 		[Embed(source = '../data/objects/enemy.png')] private var imgEnemy:Class;
+		[Embed(source = '../data/objects/hackbar.png')] private var imgHackBar:Class;
 		
 		public const k_fShotPeriod:Number = 2.0;
 		private const k_iMoveSpeed:int = 80;
@@ -24,6 +27,7 @@ package
 		public var m_fShootTimer:Number;
 		public var m_fHackedTime:Number = 0;
 		public var m_bIsTurret:Boolean = false;
+		public var m_tHackBar:FlxSprite;
 		
 		private var m_bIsHorizontal:Boolean;
 		private var m_fMoveWaitTimer:Number;
@@ -49,6 +53,12 @@ package
 			// Bounding box modifications
 			width -= 4;		offset.x = 2;	x += 2;
 			height -= 4;	offset.y = 2;	y += 2;
+			
+			// Hack progress bar
+			m_tHackBar = new FlxSprite(x, y + height);
+			m_tHackBar.loadGraphic(imgHackBar);
+			m_tHackBar.y -= m_tHackBar.height;
+			m_tHackBar.alpha = 0;
 		}
 		
 		override public function update():void
@@ -104,6 +114,7 @@ package
 			}
 			
 			// Hacked?
+			m_tHackBar.alpha = Math.min((m_fHackedTime / k_fHackTimeReq), 1);
 			if (m_fHackedTime > k_fHackTimeReq)
 			{
 				// Become turret
@@ -114,9 +125,14 @@ package
 				if (m_bIsHorizontal)	play("stand_h");	// TO DO - distinct turret animation
 				else 					play("stand_v");
 				color = 0x80ff80;
+				m_tHackBar.kill();
 			}
 			
 			super.update();
+			
+			// Stick hack bar to correct position post-update
+			m_tHackBar.x = x;
+			m_tHackBar.y = y + height;
 		}
 	}
 }

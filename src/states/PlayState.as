@@ -81,8 +81,9 @@ package states
 			s_layerPlayer.add(m_tPlayer);
 			
 			s_layerForeground = new FlxGroup;
-			s_layerForeground.add(m_tEnemies[m_tEnemies.length-1]);	// TEMP, will be done as enemies spawn
+			s_layerForeground.add(m_tEnemies[m_tEnemies.length - 1]);		// TEMP, will be done as enemies spawn
 			s_layerForeground.add(m_tMapMain);
+			s_layerForeground.add(m_tEnemies[m_tEnemies.length - 1].m_tHackBar);
 			
 			// Add layers
 			add(s_layerBackground);
@@ -163,7 +164,7 @@ package states
 					}
 					
 					m_tBullets.push(tNewBullet);
-					s_layerBackground.add(m_tBullets[m_tBullets.length -1]);
+					s_layerForeground.add(m_tBullets[m_tBullets.length -1]);
 					
 					m_tEnemies[i].m_fShootTimer = m_tEnemies[i].k_fShotPeriod;
 					m_tEnemies[i].m_bShotReady = false;
@@ -177,14 +178,14 @@ package states
 				if (m_tBullets[i].collide(m_tMapMain))
 				{
 					m_tBullets[i].kill();
-					s_layerBackground.remove(m_tBullets[i]);
+					s_layerForeground.remove(m_tBullets[i]);
 					m_tBullets.splice(i, 1);
 				}
 				// Bullet-player collision
 				else if (m_tBullets[i].collide(s_layerPlayer))
 				{
 					m_tBullets[i].kill();
-					s_layerBackground.remove(m_tBullets[i]);
+					s_layerForeground.remove(m_tBullets[i]);
 					m_tBullets.splice(i, 1);
 					
 					m_tPlayer.kill();
@@ -197,7 +198,7 @@ package states
 						if (m_tBullets[i].collide(m_tEnemies[j]))
 						{
 							m_tBullets[i].kill();
-							s_layerBackground.remove(m_tBullets[i]);
+							s_layerForeground.remove(m_tBullets[i]);
 							m_tBullets.splice(i, 1);
 					
 							m_tEnemies[j].kill();
