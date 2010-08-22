@@ -531,7 +531,7 @@ package org.flixel
 		 * 
 		 * @return	The <code>BitmapData</code> we just created.
 		 */
-		static public function addBitmap(Graphic:Class, Reverse:Boolean=false, Unique:Boolean=false, Key:String=null):BitmapData
+		static public function addBitmap(Graphic:Class, ReverseX:Boolean=false, ReverseY:Boolean=false, Unique:Boolean=false, Key:String=null):BitmapData
 		{
 			var needReverse:Boolean = false;
 			var key:String = Key;
@@ -552,18 +552,28 @@ package org.flixel
 			if(!checkBitmapCache(key))
 			{
 				_cache[key] = (new Graphic).bitmapData;
-				if(Reverse) needReverse = true;
+				if(ReverseX || ReverseY) needReverse = true;
 			}
 			var pixels:BitmapData = _cache[key];
-			if(!needReverse && Reverse && (pixels.width == (new Graphic).bitmapData.width))
+			if(!needReverse && (ReverseX || ReverseY) && (pixels.width == (new Graphic).bitmapData.width) && (pixels.height == (new Graphic).bitmapData.height))
 				needReverse = true;
-			if(needReverse)
+			if(needReverse && ReverseX)
 			{
 				var newPixels:BitmapData = new BitmapData(pixels.width<<1,pixels.height,true,0x00000000);
 				newPixels.draw(pixels);
 				var mtx:Matrix = new Matrix();
 				mtx.scale(-1,1);
 				mtx.translate(newPixels.width,0);
+				newPixels.draw(pixels,mtx);
+				pixels = newPixels;
+			}
+			if (needReverse && ReverseY)
+			{
+				newPixels = new BitmapData(pixels.width,pixels.height<<1,true,0x00000000);
+				newPixels.draw(pixels);
+				mtx = new Matrix();
+				mtx.scale(1,-1);
+				mtx.translate(0,newPixels.height);
 				newPixels.draw(pixels,mtx);
 				pixels = newPixels;
 			}

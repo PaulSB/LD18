@@ -159,7 +159,7 @@ package org.flixel
 			width = widthInTiles*_tileWidth;
 			height = heightInTiles*_tileHeight;
 			_rects = new Array(totalTiles);
-			for (i = 0; i < totalTiles; i++)
+			for(i = 0; i < totalTiles; i++)
 			{
 				updateTile(i);
 			}

@@ -8,6 +8,8 @@
 package
 {
 	// IMPORTS
+	import Math;
+	
 	import org.flixel.FlxG;
 	import org.flixel.FlxSprite;
 	
@@ -21,6 +23,9 @@ package
 		{
 			super(iX, iY);
 			loadGraphic(imgPlayer, true, true, 40, 40);
+			addAnimation("stand_v", [0]);
+			addAnimation("stand_h", [1]);
+			facing = UP;
 			
 			// Bounding box modifications
 			width -= 4;		offset.x = 2;
@@ -29,30 +34,55 @@ package
 		
 		override public function update():void
 		{
-			if (FlxG.keys.LEFT)
+			if (velocity.y == 0)
 			{
-				velocity.x = -k_MoveSpeed;
+				if(FlxG.keys.LEFT || FlxG.keys.A)
+				{
+					if (velocity.x >= 0)
+					{
+						velocity.x = -k_MoveSpeed;
+						facing = LEFT;
+						play("stand_h");
+					}
+				}
+				else if (FlxG.keys.RIGHT || FlxG.keys.D)
+				{
+					if (velocity.x <= 0)
+					{
+						velocity.x = +k_MoveSpeed;
+						facing = RIGHT;
+						play("stand_h");
+					}
+				}
+				else if (velocity.x)
+				{
+					velocity.x = 0;
+				}
 			}
-			else if (FlxG.keys.RIGHT)
+			if (velocity.x == 0)
 			{
-				velocity.x = +k_MoveSpeed;
-			}
-			else
-			{
-				velocity.x = 0;
-			}
-			
-			if (FlxG.keys.UP)
-			{
-				velocity.y = -k_MoveSpeed;
-			}
-			else if (FlxG.keys.DOWN)
-			{
-				velocity.y = +k_MoveSpeed;
-			}
-			else
-			{
-				velocity.y = 0;
+				if (FlxG.keys.UP || FlxG.keys.W)
+				{
+					if (velocity.y >= 0)
+					{
+						velocity.y = -k_MoveSpeed;
+						facing = UP;
+						play("stand_v");
+					}
+				}
+				else if (FlxG.keys.DOWN || FlxG.keys.S)
+				{
+					if (velocity.y <= 0)
+					{
+						velocity.y = +k_MoveSpeed;
+						facing = DOWN;
+						play("stand_v");
+					}
+				}
+				else if (velocity.y)
+				{
+					velocity.y = 0;
+				}
 			}
 			
 			super.update();

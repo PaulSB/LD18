@@ -71,7 +71,8 @@ package org.flixel
 		
 		//Animation helpers
 		protected var _animations:Array;
-		protected var _flipped:uint;
+		protected var _flippedX:uint;
+		protected var _flippedY:uint;
 		protected var _curAnim:FlxAnim;
 		protected var _curFrame:uint;
 		protected var _caf:uint;
@@ -120,7 +121,7 @@ package org.flixel
 			finished = false;
 			_facing = RIGHT;
 			_animations = new Array();
-			_flipped = 0;
+			_flippedX = _flippedY = 0;
 			_curAnim = null;
 			_curFrame = 0;
 			_caf = 0;
@@ -150,16 +151,19 @@ package org.flixel
 		public function loadGraphic(Graphic:Class,Animated:Boolean=false,Reverse:Boolean=false,Width:uint=0,Height:uint=0,Unique:Boolean=false):FlxSprite
 		{
 			_bakedRotation = 0;
-			_pixels = FlxG.addBitmap(Graphic,Reverse,Unique);
-			if(Reverse)
-				_flipped = _pixels.width>>1;
+			_pixels = FlxG.addBitmap(Graphic,Reverse,Reverse,Unique);
+			if (Reverse)
+			{
+				_flippedX = _pixels.width >> 1;
+				_flippedY = _pixels.height >> 1;
+			}
 			else
-				_flipped = 0;
+				_flippedX = _flippedY = 0;
 			if(Width == 0)
 			{
 				if(Animated)
 					Width = _pixels.height;
-				else if(_flipped > 0)
+				else if(_flippedX > 0)
 					Width = _pixels.width/2;
 				else
 					Width = _pixels.width;
@@ -169,6 +173,8 @@ package org.flixel
 			{
 				if(Animated)
 					Height = width;
+				else if (_flippedY > 0)
+					Height = _pixels.height/2;
 				else
 					Height = _pixels.height;
 			}
@@ -679,7 +685,7 @@ package org.flixel
 			var ry:uint = 0;
 
 			//Handle sprite sheets
-			var w:uint = _flipped?_flipped:_pixels.width;
+			var w:uint = _flippedX?_flippedX:_pixels.width;
 			if(rx >= w)
 			{
 				ry = uint(rx/w)*frameHeight;
@@ -687,8 +693,10 @@ package org.flixel
 			}
 			
 			//handle reversed sprites
-			if(_flipped && (_facing == LEFT))
-				rx = (_flipped<<1)-rx-frameWidth;
+			if (_flippedX && _facing == LEFT)
+				rx = (_flippedX << 1) - rx - frameWidth;
+			else if(_flippedY && _facing == UP)
+				ry = (_flippedY << 1) - ry - frameHeight;
 			
 			//Update display bitmap
 			_flashRect.x = rx;
