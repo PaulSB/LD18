@@ -41,9 +41,10 @@ package states
 		private const k_fWaveDuration:Number = 10;	// TO DO - this is obviously too small, for testing
 		
 		// Render layers
-		static private var s_layerBackground:FlxGroup;
-		static private var s_layerPlayer:FlxGroup;
-		static private var s_layerForeground:FlxGroup;
+		static private var s_layerBackground:FlxGroup;			// Floor
+		static private var s_layerPlayer:FlxGroup;				// Player
+		static private var s_layerForeground:FlxGroup;			// Robots
+		static private var s_layerSuperForeground:FlxGroup;		// Bullets, indicators
 		
 		private var m_tMapMain:FlxTilemap;
 		private var m_tFloor:FlxSprite;
@@ -82,14 +83,15 @@ package states
 			s_layerPlayer.add(m_tPlayer);
 			
 			s_layerForeground = new FlxGroup;
-			//s_layerForeground.add(m_tEnemies[m_tEnemies.length - 1]);		// TEMP, will be done as enemies spawn
 			s_layerForeground.add(m_tMapMain);
-			//s_layerForeground.add(m_tEnemies[m_tEnemies.length - 1].m_tHackBar);
+			
+			s_layerSuperForeground = new FlxGroup;
 			
 			// Add layers
 			add(s_layerBackground);
 			add(s_layerPlayer);
 			add(s_layerForeground);
+			add(s_layerSuperForeground);
 		}
 		
 		override public function update():void
@@ -126,10 +128,31 @@ package states
 						// TO DO: anims of "hacking" or just "using"
 					}
 				}
+				else
+				{
+					// Check here for turrets dying from degradation
+					if (m_tEnemies[i].health <= 0)
+					{
+						m_tEnemies[j].kill();
+						m_tEnemies[j].m_tHackBar.kill();
+						s_layerForeground.remove(m_tEnemies[j]);
+						s_layerSuperForeground.remove(m_tEnemies[j].m_tHackBar);
+						m_tEnemies.splice(j, 1);
+						break;
+					}
+				}
 				
-				// Enemy-world/player collision
+				// Enemy-world/player/robot collision
 				if (m_tEnemies[i].collide(m_tMapMain) || m_tEnemies[i].collide(s_layerPlayer))
 					m_tEnemies[i].m_bMoving = false;
+				else
+				{
+					for (var k:int = 0; k < m_tEnemies.length; k++)
+					{
+						if (m_tEnemies[k].m_bIsTurret && m_tEnemies[i].collide(m_tEnemies[k]))
+							m_tEnemies[i].m_bMoving = false;
+					}
+				}
 					
 				// Enemy bullet spawning
 				if (m_tEnemies[i].m_bShotReady)
@@ -175,7 +198,7 @@ package states
 					}
 					
 					m_tBullets.push(tNewBullet);
-					s_layerForeground.add(m_tBullets[m_tBullets.length -1]);
+					s_layerSuperForeground.add(m_tBullets[m_tBullets.length -1]);
 					
 					m_tEnemies[i].m_fShootTimer = m_tEnemies[i].k_fShotPeriod;
 					m_tEnemies[i].m_bShotReady = false;
@@ -189,7 +212,7 @@ package states
 				if (m_tBullets[i].collide(m_tMapMain))
 				{
 					m_tBullets[i].kill();
-					s_layerForeground.remove(m_tBullets[i]);
+					s_layerSuperForeground.remove(m_tBullets[i]);
 					m_tBullets.splice(i, 1);
 					break;
 				}
@@ -197,7 +220,7 @@ package states
 				else if (m_tBullets[i].collide(s_layerPlayer))
 				{
 					m_tBullets[i].kill();
-					s_layerForeground.remove(m_tBullets[i]);
+					s_layerSuperForeground.remove(m_tBullets[i]);
 					m_tBullets.splice(i, 1);
 					
 					m_tPlayer.kill();
@@ -216,11 +239,11 @@ package states
 								m_tEnemies[j].kill();
 								m_tEnemies[j].m_tHackBar.kill();
 								s_layerForeground.remove(m_tEnemies[j]);
-								s_layerForeground.remove(m_tEnemies[j].m_tHackBar);
+								s_layerSuperForeground.remove(m_tEnemies[j].m_tHackBar);
 								m_tEnemies.splice(j, 1);
 								
 								m_tBullets[i].kill();
-								s_layerForeground.remove(m_tBullets[i]);
+								s_layerSuperForeground.remove(m_tBullets[i]);
 								m_tBullets.splice(i, 1);
 								break;
 							}
@@ -233,16 +256,16 @@ package states
 						{
 							if (m_tEnemies[j].m_bIsTurret && m_tBullets[i].collide(m_tEnemies[j]))
 							{
-    								if (m_tEnemies[j].health <= 0.5)
+    							if (m_tEnemies[j].health <= 0.5)
 								{
 									m_tEnemies[j].kill();
 									m_tEnemies[j].m_tHackBar.kill();
 									s_layerForeground.remove(m_tEnemies[j]);
-									s_layerForeground.remove(m_tEnemies[j].m_tHackBar);
+									s_layerSuperForeground.remove(m_tEnemies[j].m_tHackBar);
 									m_tEnemies.splice(j, 1);
 									
 									m_tBullets[i].kill();
-									s_layerForeground.remove(m_tBullets[i]);
+									s_layerSuperForeground.remove(m_tBullets[i]);
 									m_tBullets.splice(i, 1);
 									break;
 								}
@@ -252,7 +275,7 @@ package states
 									m_tEnemies[j].m_tHackBar.alpha = (1 - m_tEnemies[j].health);
 									
 									m_tBullets[i].kill();
-									s_layerForeground.remove(m_tBullets[i]);
+									s_layerSuperForeground.remove(m_tBullets[i]);
 									m_tBullets.splice(i, 1);
 									break;
 								}
@@ -270,7 +293,7 @@ package states
 			m_tEnemies.push(new Enemy(m_tEntryPoint.x, m_tEntryPoint.y));
 			
 			s_layerForeground.add(m_tEnemies[m_tEnemies.length - 1]);
-			s_layerForeground.add(m_tEnemies[m_tEnemies.length - 1].m_tHackBar);
+			s_layerSuperForeground.add(m_tEnemies[m_tEnemies.length - 1].m_tHackBar);
 		}
 	}
 }

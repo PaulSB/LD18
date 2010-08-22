@@ -22,6 +22,7 @@ package
 		public const k_fShotPeriod:Number = 2.0;
 		private const k_iMoveSpeed:int = 80;
 		private const k_fHackTimeReq:Number = 2.0;
+		private const k_fDegradePeriod:Number = 1.0;
 		
 		public var m_bMoving:Boolean = false;
 		public var m_bShotReady:Boolean = false;
@@ -32,6 +33,7 @@ package
 		
 		private var m_bIsHorizontal:Boolean;
 		private var m_fMoveWaitTimer:Number;
+		private var m_fDegradeTimer:Number = 0;
 		
 		public function Enemy(iX:int, iY:int)
 		{
@@ -131,6 +133,20 @@ package
 					health = 1;
 					m_tHackBar.loadGraphic(imgDmgBar);
 					m_tHackBar.alpha = 0;
+				}
+			}
+			else
+			{
+				// Degrade turrets over time
+				if (m_fDegradeTimer > k_fDegradePeriod)
+				{
+					health -= 0.01;
+					m_tHackBar.alpha = (1 - health);
+					m_fDegradeTimer = 0;
+				}
+				else
+				{
+					m_fDegradeTimer += FlxG.elapsed;
 				}
 			}
 			
