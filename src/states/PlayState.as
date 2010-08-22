@@ -8,6 +8,8 @@
 package states
 {
 	// IMPORTS
+	import flash.geom.Point;
+	
 	import org.flixel.FlxG;
 	import org.flixel.FlxGroup;
 	import org.flixel.FlxSprite;
@@ -15,6 +17,7 @@ package states
 	import org.flixel.FlxTilemap;
 	//import org.flixel.FlxText;
 	
+	import Enemy;
 	import Player;
 	
 	public class PlayState extends FlxState
@@ -41,6 +44,7 @@ package states
 		private var m_tEntryPoint:FlxSprite;	// Visible Enemy spawn location (just 1 for now at least)
 		
 		private var m_tPlayer:Player;
+		private var m_tEnemies:Array;	// To be filled with Enemy objects
 		
 		override public function create():void
 		{
@@ -51,10 +55,14 @@ package states
 			m_tFloor = new FlxSprite;
 			m_tFloor.loadGraphic(imgFloor);
 			
-			m_tEntryPoint = new FlxSprite(k_iTileScale * 8, k_iTileScale * 1);
+			var tSpawnLoc:Point = new Point(k_iTileScale * 8, k_iTileScale * 1);
+			m_tEntryPoint = new FlxSprite(tSpawnLoc.x, tSpawnLoc.y);
 			m_tEntryPoint.loadGraphic(imgEnemyPoint);
 			
 			m_tPlayer = new Player(k_iTileScale * 1, k_iTileScale * 8);
+			
+			m_tEnemies = new Array;
+			m_tEnemies.push(new Enemy(tSpawnLoc.x, tSpawnLoc.y));
 			
 			// Add objects to layers
 			s_layerBackground = new FlxGroup;
@@ -65,6 +73,7 @@ package states
 			s_layerPlayer.add(m_tPlayer);
 			
 			s_layerForeground = new FlxGroup;
+			s_layerForeground.add(m_tEnemies[m_tEnemies.length-1]);	// TEMP, will be done as enemies spawn
 			s_layerForeground.add(m_tMapMain);
 			
 			// Add layers

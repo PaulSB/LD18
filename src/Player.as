@@ -34,8 +34,8 @@ package
 			m_bIsHorizontal = false;
 			
 			// Bounding box modifications
-			width -= 4;		offset.x = 2;
-			height -= 8;	offset.y = 4;
+			width -= 4;		offset.x = 2;	x += 2;
+			height -= 8;	offset.y = 4;	y += 4;
 		}
 		
 		override public function update():void
@@ -100,7 +100,7 @@ package
 				}
 			}
 			
-			if (!bStopped)
+			if (bStopped)
 			{
 				if (m_bIsHorizontal)
 					play("stand_h");
