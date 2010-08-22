@@ -84,7 +84,15 @@ package states
 		
 		override public function update():void
 		{
+			// Player-world collision
 			s_layerPlayer.collide(m_tMapMain);
+			
+			// Enemy-world collision
+			for (var i:int = 0; i < m_tEnemies.length; i++)
+			{
+				if (m_tEnemies[i].collide(m_tMapMain))
+					m_tEnemies[i].m_bMoving = false;
+			}
 			
 			super.update();
 		}
