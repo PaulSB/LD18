@@ -17,6 +17,7 @@ package states
 	import org.flixel.FlxState;
 	import org.flixel.FlxTilemap;
 	//import org.flixel.FlxText;
+	import org.flixel.FlxU;
 	
 	import Enemy;
 	import Player;
@@ -56,7 +57,7 @@ package states
 		
 		private var m_tMapMain:FlxTilemap;
 		private var m_tFloor:FlxSprite;
-		private var m_tEntryPoint:FlxSprite;	// Visible Enemy spawn location (just 1 for now at least)
+		private var m_tEntryPoints:Array;	// Visible Enemy spawn location
 		
 		private var m_tPlayer:Player;
 		private var m_tEnemies:Array;	// To be filled with Enemy objects
@@ -79,9 +80,14 @@ package states
 			m_tFloor = new FlxSprite;
 			m_tFloor.loadGraphic(imgFloor);
 			
-			var tSpawnLoc:Point = new Point(k_iTileScale * 8, k_iTileScale * 1);
-			m_tEntryPoint = new FlxSprite(tSpawnLoc.x, tSpawnLoc.y);
-			m_tEntryPoint.loadGraphic(imgEnemyPoint);
+			// Robot entry points
+			m_tEntryPoints = new Array();
+			m_tEntryPoints.push(new FlxSprite(k_iTileScale * 1, k_iTileScale * 1));
+			m_tEntryPoints.push(new FlxSprite(k_iTileScale * 7, k_iTileScale * 1));
+			m_tEntryPoints.push(new FlxSprite(k_iTileScale * 8, k_iTileScale * 1));
+			m_tEntryPoints.push(new FlxSprite(k_iTileScale * 14, k_iTileScale * 1));
+			for (var i:int = 0; i < m_tEntryPoints.length; i++)
+				m_tEntryPoints[i].loadGraphic(imgEnemyPoint);
 			
 			m_tPlayer = new Player(k_iTileScale * 8, k_iTileScale * 8);
 			
@@ -100,7 +106,8 @@ package states
 			// Add objects to layers
 			s_layerBackground = new FlxGroup;
 			s_layerBackground.add(m_tFloor);
-			s_layerBackground.add(m_tEntryPoint);
+			for (i = 0; i < m_tEntryPoints.length; i++)
+				s_layerBackground.add(m_tEntryPoints[i]);
 			
 			s_layerPlayer = new FlxGroup;
 			s_layerPlayer.add(m_tPlayer);
@@ -321,7 +328,13 @@ package states
 			if (m_tEnemies.length >= k_iMaxRobots)
 				return;
 			
-			m_tEnemies.push(new Enemy(m_tEntryPoint.x, m_tEntryPoint.y));
+			var fEntryPoint:Number = (FlxU.random() * 4);
+			var iEntryPoint:int = 0;
+			if (fEntryPoint >= 1.0)			iEntryPoint = 1;	// Bleeurgh
+			else if (fEntryPoint >= 2.0)	iEntryPoint = 2;
+			else if (fEntryPoint >= 3.0)	iEntryPoint = 3;
+			
+			m_tEnemies.push(new Enemy(m_tEntryPoints[iEntryPoint].x, m_tEntryPoints[iEntryPoint].y));
 			
 			s_layerForeground.add(m_tEnemies[m_tEnemies.length - 1]);
 			s_layerSuperForeground.add(m_tEnemies[m_tEnemies.length - 1].m_tHackBar);
