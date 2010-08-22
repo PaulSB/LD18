@@ -38,6 +38,7 @@ package states
 		private const k_iTileScale:int = 40;
 		private const k_iBulletSpeed:int = 200;
 		private const k_fHackingRange:Number = 60;
+		private const k_fWaveDuration:Number = 10;	// TO DO - this is obviously too small, for testing
 		
 		// Render layers
 		static private var s_layerBackground:FlxGroup;
@@ -51,6 +52,8 @@ package states
 		private var m_tPlayer:Player;
 		private var m_tEnemies:Array;	// To be filled with Enemy objects
 		private var m_tBullets:Array;	// To be filled with FlxSprite objects
+		
+		private var m_fWaveTimer:Number = 0;
 		
 		override public function create():void
 		{
@@ -67,9 +70,7 @@ package states
 			
 			m_tPlayer = new Player(k_iTileScale * 1, k_iTileScale * 8);
 			
-			m_tEnemies = new Array;
-			m_tEnemies.push(new Enemy(tSpawnLoc.x, tSpawnLoc.y));
-			
+			m_tEnemies = new Array;		
 			m_tBullets = new Array;
 			
 			// Add objects to layers
@@ -81,9 +82,9 @@ package states
 			s_layerPlayer.add(m_tPlayer);
 			
 			s_layerForeground = new FlxGroup;
-			s_layerForeground.add(m_tEnemies[m_tEnemies.length - 1]);		// TEMP, will be done as enemies spawn
+			//s_layerForeground.add(m_tEnemies[m_tEnemies.length - 1]);		// TEMP, will be done as enemies spawn
 			s_layerForeground.add(m_tMapMain);
-			s_layerForeground.add(m_tEnemies[m_tEnemies.length - 1].m_tHackBar);
+			//s_layerForeground.add(m_tEnemies[m_tEnemies.length - 1].m_tHackBar);
 			
 			// Add layers
 			add(s_layerBackground);
@@ -93,6 +94,17 @@ package states
 		
 		override public function update():void
 		{
+			// Spawn enemies
+			if	(m_fWaveTimer > k_fWaveDuration)
+			{
+				m_fWaveTimer = 0;
+				spawnWaves();
+			}
+			else
+			{
+				m_fWaveTimer += FlxG.elapsed;
+			}
+			
 			// Player-world collision
 			s_layerPlayer.collide(m_tMapMain);
 			
@@ -107,12 +119,11 @@ package states
 												&& Point.distance(m_tPlayer.m_tPlayerPos, tEnemyPos) < k_fHackingRange)
 					{
 						// This enemy is being hacked
-						m_tPlayer.color = 0xd0ffd0;
 						m_tEnemies[i].m_fHackedTime += FlxG.elapsed;
 					}
 					else 
 					{
-						m_tPlayer.color = 0xffffff;
+						// TO DO: anims of "hacking" or just "using"
 					}
 				}
 				
@@ -180,6 +191,7 @@ package states
 					m_tBullets[i].kill();
 					s_layerForeground.remove(m_tBullets[i]);
 					m_tBullets.splice(i, 1);
+					break;
 				}
 				// Bullet-player collision
 				else if (m_tBullets[i].collide(s_layerPlayer))
@@ -189,25 +201,76 @@ package states
 					m_tBullets.splice(i, 1);
 					
 					m_tPlayer.kill();
+					break;
 				}
-				// Bullet-robot collision
-				else if (m_tBullets[i].health > 0.8)
+				else
 				{
-					for (var j:int = 0; j < m_tEnemies.length; j++)
+					// Bullet-robot collision
+					if (m_tBullets[i].health > 0.8)
 					{
-						if (m_tBullets[i].collide(m_tEnemies[j]))
+						// Turrets hurt robots
+						for (var j:int = 0; j < m_tEnemies.length; j++)
 						{
-							m_tBullets[i].kill();
-							s_layerForeground.remove(m_tBullets[i]);
-							m_tBullets.splice(i, 1);
-					
-							m_tEnemies[j].kill();
+							if (!m_tEnemies[j].m_bIsTurret && m_tBullets[i].collide(m_tEnemies[j]))
+							{
+								m_tEnemies[j].kill();
+								m_tEnemies[j].m_tHackBar.kill();
+								s_layerForeground.remove(m_tEnemies[j]);
+								s_layerForeground.remove(m_tEnemies[j].m_tHackBar);
+								m_tEnemies.splice(j, 1);
+								
+								m_tBullets[i].kill();
+								s_layerForeground.remove(m_tBullets[i]);
+								m_tBullets.splice(i, 1);
+								break;
+							}
+						}
+					}
+					else
+					{
+						// Robots hurt turrets (2 hits)
+						for (j = 0; j < m_tEnemies.length; j++)
+						{
+							if (m_tEnemies[j].m_bIsTurret && m_tBullets[i].collide(m_tEnemies[j]))
+							{
+    								if (m_tEnemies[j].health <= 0.5)
+								{
+									m_tEnemies[j].kill();
+									m_tEnemies[j].m_tHackBar.kill();
+									s_layerForeground.remove(m_tEnemies[j]);
+									s_layerForeground.remove(m_tEnemies[j].m_tHackBar);
+									m_tEnemies.splice(j, 1);
+									
+									m_tBullets[i].kill();
+									s_layerForeground.remove(m_tBullets[i]);
+									m_tBullets.splice(i, 1);
+									break;
+								}
+								else
+								{
+									m_tEnemies[j].health -= 0.5;
+									m_tEnemies[j].m_tHackBar.alpha = (1 - m_tEnemies[j].health);
+									
+									m_tBullets[i].kill();
+									s_layerForeground.remove(m_tBullets[i]);
+									m_tBullets.splice(i, 1);
+									break;
+								}
+							}
 						}
 					}
 				}
 			}
 			
 			super.update();
+		}
+		
+		public function spawnWaves():void
+		{
+			m_tEnemies.push(new Enemy(m_tEntryPoint.x, m_tEntryPoint.y));
+			
+			s_layerForeground.add(m_tEnemies[m_tEnemies.length - 1]);
+			s_layerForeground.add(m_tEnemies[m_tEnemies.length - 1].m_tHackBar);
 		}
 	}
 }

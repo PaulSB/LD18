@@ -17,6 +17,7 @@ package
 	{
 		[Embed(source = '../data/objects/enemy.png')] private var imgEnemy:Class;
 		[Embed(source = '../data/objects/hackbar.png')] private var imgHackBar:Class;
+		[Embed(source = '../data/objects/damagebar.png')] private var imgDmgBar:Class;
 		
 		public const k_fShotPeriod:Number = 2.0;
 		private const k_iMoveSpeed:int = 80;
@@ -114,23 +115,28 @@ package
 			}
 			
 			// Hacked?
-			m_tHackBar.alpha = Math.min((m_fHackedTime / k_fHackTimeReq), 1);
-			if (m_fHackedTime > k_fHackTimeReq)
+			if (!m_bIsTurret)
 			{
-				// Become turret
-				m_bIsTurret = true;
-				fixed = true;
-				m_bMoving = false;
-				velocity.x = velocity.y = 0;
-				if (m_bIsHorizontal)	play("stand_h");	// TO DO - distinct turret animation
-				else 					play("stand_v");
-				color = 0x80ff80;
-				m_tHackBar.kill();
+				m_tHackBar.alpha = Math.min((m_fHackedTime / k_fHackTimeReq), 1);
+				if (m_fHackedTime > k_fHackTimeReq)
+				{
+					// Become turret
+					m_bIsTurret = true;
+					fixed = true;
+					m_bMoving = false;
+					velocity.x = velocity.y = 0;
+					if (m_bIsHorizontal)	play("stand_h");	// TO DO - distinct turret animation
+					else 					play("stand_v");
+					color = 0x80ff80;
+					health = 1;
+					m_tHackBar.loadGraphic(imgDmgBar);
+					m_tHackBar.alpha = 0;
+				}
 			}
 			
 			super.update();
 			
-			// Stick hack bar to correct position post-update
+			// Stick hack/status bar to correct position post-update
 			m_tHackBar.x = x;
 			m_tHackBar.y = y + height;
 		}
