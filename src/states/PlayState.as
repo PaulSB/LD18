@@ -90,7 +90,7 @@ package states
 			// Enemy-world collision
 			for (var i:int = 0; i < m_tEnemies.length; i++)
 			{
-				if (m_tEnemies[i].collide(m_tMapMain))
+				if (m_tEnemies[i].collide(m_tMapMain) || m_tEnemies[i].collide(s_layerPlayer))
 					m_tEnemies[i].m_bMoving = false;
 			}
 			

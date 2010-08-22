@@ -7,6 +7,7 @@
 
 package  
 {
+	import org.flixel.FlxG;
 	import org.flixel.FlxSprite;
 	import org.flixel.FlxU;
 	
@@ -19,6 +20,7 @@ package
 		public var m_bMoving:Boolean = false;
 		
 		private var m_bIsHorizontal:Boolean;
+		private var m_fMoveWaitTimer:Number;
 		
 		public function Enemy(iX:int, iY:int)
 		{
@@ -35,6 +37,7 @@ package
 			velocity.y = k_MoveSpeed;
 			play("walk_v");
 			m_bMoving = true;
+			m_fMoveWaitTimer = 0.5;
 			
 			// Bounding box modifications
 			width -= 4;		offset.x = 2;	x += 2;
@@ -45,32 +48,40 @@ package
 		{
 			if (!m_bMoving)
 			{
-				// We've been stopped but are free to now continue, choose left or right from current direction
-				var bLeft:Boolean = (FlxU.random() < 0.5);
-				
-				// Pick new direction
-				switch(facing)
+				if (m_fMoveWaitTimer > 0)
 				{
-					case LEFT:	facing = (bLeft) ? DOWN : UP;		break;
-					case RIGHT:	facing = (bLeft) ? UP : DOWN;		break;
-					case UP:	facing = (bLeft) ? LEFT : RIGHT;	break;
-					case DOWN:	facing = (bLeft) ? RIGHT : LEFT;	break;
-				}
-				
-				m_bIsHorizontal = (facing == LEFT || facing == RIGHT);
-				
-				if (m_bIsHorizontal)
-				{
-					velocity.x = (facing == LEFT) ? -k_MoveSpeed : +k_MoveSpeed;
-					play("walk_h");
+					m_fMoveWaitTimer -= FlxG.elapsed;
 				}
 				else
 				{
-					velocity.y = (facing == UP) ? -k_MoveSpeed : +k_MoveSpeed;
-					play("walk_v");
+					// We've been stopped but are free to now continue, choose left or right from current direction
+					var bLeft:Boolean = (FlxU.random() < 0.5);
+					
+					// Pick new direction
+					switch(facing)
+					{
+						case LEFT:	facing = (bLeft) ? DOWN : UP;		break;
+						case RIGHT:	facing = (bLeft) ? UP : DOWN;		break;
+						case UP:	facing = (bLeft) ? LEFT : RIGHT;	break;
+						case DOWN:	facing = (bLeft) ? RIGHT : LEFT;	break;
+					}
+					
+					m_bIsHorizontal = (facing == LEFT || facing == RIGHT);
+					
+					if (m_bIsHorizontal)
+					{
+						velocity.x = (facing == LEFT) ? -k_MoveSpeed : +k_MoveSpeed;
+						play("walk_h");
+					}
+					else
+					{
+						velocity.y = (facing == UP) ? -k_MoveSpeed : +k_MoveSpeed;
+						play("walk_v");
+					}
+					
+					m_bMoving = true;
+					m_fMoveWaitTimer = 0.5;
 				}
-				
-				m_bMoving = true;
 			}
 			
 			super.update();
