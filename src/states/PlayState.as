@@ -46,7 +46,6 @@ package states
 		private const k_iTileScale:int = 40;
 		private const k_iBulletSpeed:int = 200;
 		private const k_fHackingRange:Number = 60;
-		private const k_fWaveDuration:Number = 10;	// TO DO - this is obviously too small, for testing
 		private const k_iMaxRobots:int = 64;
 		
 		// Render layers
@@ -64,6 +63,7 @@ package states
 		private var m_tBullets:Array;	// To be filled with FlxSprite objects
 		
 		private var m_fWaveTimer:Number = 0;
+		private var m_fWaveDuration:Number = 10;	// Modify depending on number of bots active at start of wave
 		
 		// SFX
 		private var m_tSFXshoot:FlxSound;
@@ -127,10 +127,23 @@ package states
 		override public function update():void
 		{
 			// Spawn enemies
-			if	(m_fWaveTimer > k_fWaveDuration)
+			if	(m_fWaveTimer > m_fWaveDuration)
 			{
 				m_fWaveTimer = 0;
 				spawnWaves();
+				
+				if (m_tEnemies.length > 20)
+					m_fWaveDuration = 5;
+				else if (m_tEnemies.length > 16)
+					m_fWaveDuration = 6;
+				else if (m_tEnemies.length > 12)
+					m_fWaveDuration = 7;
+				else if (m_tEnemies.length > 8)
+					m_fWaveDuration = 8;
+				else if (m_tEnemies.length > 4)
+					m_fWaveDuration = 9;
+				else if (m_tEnemies.length > 0)
+					m_fWaveDuration = 10;
 			}
 			else
 			{
@@ -154,10 +167,12 @@ package states
 						m_tEnemies[i].m_fHackedTime += FlxG.elapsed;
 						if (!m_tSFXhack.playing)
 							m_tSFXhack.play();
+							
+						m_tPlayer.m_bHacking = true;
 					}
-					else 
+					else
 					{
-						// TO DO: anims of "hacking" or just "using"
+						m_tPlayer.m_bHacking = false;
 					}
 				}
 				else

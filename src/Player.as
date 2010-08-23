@@ -22,8 +22,8 @@ package
 		
 		public var m_tPlayerPos:Point;
 		public var m_bDoingAction:Boolean = false;
-		
-		private var m_bIsHorizontal:Boolean;
+		public var m_bIsHorizontal:Boolean;
+		public var m_bHacking:Boolean = false;
 		
 		public function Player(iX:int, iY:int)
 		{
@@ -36,6 +36,10 @@ package
 			addAnimation("stand_h", [1]);
 			addAnimation("walk_v", [2,0,3,0], 10);
 			addAnimation("walk_h", [4,1,5,1], 10);
+			addAnimation("use_v", [6]);
+			addAnimation("use_h", [8]);
+			addAnimation("hack_v", [7]);
+			addAnimation("hack_h", [9]);
 			facing = DOWN;
 			m_bIsHorizontal = false;
 			
@@ -51,23 +55,24 @@ package
 			{
 				if(FlxG.keys.LEFT || FlxG.keys.A)
 				{
-					bStopped = false;
+					bStopped = false;play("walk_h");
 					if (velocity.x >= 0)
 					{
 						velocity.x = -k_MoveSpeed;
 						facing = LEFT;
-						play("walk_h");
+						
 						m_bIsHorizontal = true;
 					}
 				}
 				else if (FlxG.keys.RIGHT || FlxG.keys.D)
 				{
 					bStopped = false;
+					play("walk_h");
 					if (velocity.x <= 0)
 					{
 						velocity.x = +k_MoveSpeed;
 						facing = RIGHT;
-						play("walk_h");
+						
 						m_bIsHorizontal = true;
 					}
 				}
@@ -81,22 +86,24 @@ package
 				if (FlxG.keys.UP || FlxG.keys.W)
 				{
 					bStopped = false;
+					play("walk_v");
 					if (velocity.y >= 0)
 					{
 						velocity.y = -k_MoveSpeed;
 						facing = UP;
-						play("walk_v");
+						
 						m_bIsHorizontal = false;
 					}
 				}
 				else if (FlxG.keys.DOWN || FlxG.keys.S)
 				{
 					bStopped = false;
+					play("walk_v");
 					if (velocity.y <= 0)
 					{
 						velocity.y = +k_MoveSpeed;
 						facing = DOWN;
-						play("walk_v");
+						
 						m_bIsHorizontal = false;
 					}
 				}
@@ -113,9 +120,27 @@ package
 				else
 					play("stand_v");
 			}
-				
+
 			// "Action" command
-			m_bDoingAction = (FlxG.keys.SPACE);
+			if (FlxG.keys.SPACE)
+			{
+				m_bDoingAction = true;
+				
+				if (m_bHacking)
+				{
+					if(m_bIsHorizontal)
+						play("hack_h");
+					else
+						play("hack_v");
+				}
+				else
+				{
+					if (m_bIsHorizontal)
+						play("use_h");
+					else
+						play("use_v");					
+				}
+			}
 			
 			super.update();
 			
