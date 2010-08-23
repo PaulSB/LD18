@@ -40,7 +40,11 @@ package
 			addAnimation("use_h", [8]);
 			addAnimation("hack_v", [7]);
 			addAnimation("hack_h", [9]);
-			facing = DOWN;
+			addAnimation("usewalk_v", [10,6,14,6], 10);
+			addAnimation("usewalk_h", [12,8,16,8], 10);
+			addAnimation("hackwalk_v", [11,7,15,7], 10);
+			addAnimation("hackwalk_h", [13,9,17,9], 10);
+			facing = UP;
 			m_bIsHorizontal = false;
 			
 			// Bounding box modifications
@@ -55,7 +59,17 @@ package
 			{
 				if(FlxG.keys.LEFT || FlxG.keys.A)
 				{
-					bStopped = false;play("walk_h");
+					bStopped = false;
+					if (m_bDoingAction)
+					{
+						if (m_bHacking)
+							play("hackwalk_h");
+						else
+							play("usewalk_h");
+					}
+					else
+						play("walk_h");
+						
 					if (velocity.x >= 0)
 					{
 						velocity.x = -k_MoveSpeed;
@@ -67,7 +81,16 @@ package
 				else if (FlxG.keys.RIGHT || FlxG.keys.D)
 				{
 					bStopped = false;
-					play("walk_h");
+					if (m_bDoingAction)
+					{
+						if (m_bHacking)
+							play("hackwalk_h");
+						else
+							play("usewalk_h");
+					}
+					else
+						play("walk_h");
+						
 					if (velocity.x <= 0)
 					{
 						velocity.x = +k_MoveSpeed;
@@ -86,7 +109,16 @@ package
 				if (FlxG.keys.UP || FlxG.keys.W)
 				{
 					bStopped = false;
-					play("walk_v");
+					if (m_bDoingAction)
+					{
+						if (m_bHacking)
+							play("hackwalk_v");
+						else
+							play("usewalk_v");
+					}
+					else
+						play("walk_v");
+						
 					if (velocity.y >= 0)
 					{
 						velocity.y = -k_MoveSpeed;
@@ -98,7 +130,16 @@ package
 				else if (FlxG.keys.DOWN || FlxG.keys.S)
 				{
 					bStopped = false;
-					play("walk_v");
+					if (m_bDoingAction)
+					{
+						if (m_bHacking)
+							play("hackwalk_v");
+						else
+							play("usewalk_v");
+					}
+					else
+						play("walk_v");
+						
 					if (velocity.y <= 0)
 					{
 						velocity.y = +k_MoveSpeed;
@@ -115,31 +156,40 @@ package
 			
 			if (bStopped)
 			{
-				if (m_bIsHorizontal)
-					play("stand_h");
+				if (m_bDoingAction)
+				{
+					if (m_bHacking)
+					{
+						if (m_bIsHorizontal)
+							play("hack_h");
+						else
+							play("hack_v");
+					}
+					else
+					{
+						if (m_bIsHorizontal)
+							play("use_h");
+						else
+							play("use_v");
+					}
+				}
 				else
-					play("stand_v");
+				{
+					if (m_bIsHorizontal)
+						play("stand_h");
+					else
+						play("stand_v");
+				}
 			}
 
 			// "Action" command
 			if (FlxG.keys.SPACE)
 			{
 				m_bDoingAction = true;
-				
-				if (m_bHacking)
-				{
-					if(m_bIsHorizontal)
-						play("hack_h");
-					else
-						play("hack_v");
-				}
-				else
-				{
-					if (m_bIsHorizontal)
-						play("use_h");
-					else
-						play("use_v");					
-				}
+			}
+			else
+			{
+				m_bDoingAction = false;
 			}
 			
 			super.update();

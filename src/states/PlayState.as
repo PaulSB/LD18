@@ -154,6 +154,7 @@ package states
 			s_layerPlayer.collide(m_tMapMain);
 			
 			// Enemies
+			m_tPlayer.m_bHacking = false;
 			for (var i:int = 0; i < m_tEnemies.length; i++)
 			{
 				// Player hacking attempt
@@ -170,10 +171,6 @@ package states
 							
 						m_tPlayer.m_bHacking = true;
 					}
-					else
-					{
-						m_tPlayer.m_bHacking = false;
-					}
 				}
 				else
 				{
@@ -185,6 +182,7 @@ package states
 						s_layerForeground.remove(m_tEnemies[j]);
 						s_layerSuperForeground.remove(m_tEnemies[j].m_tHackBar);
 						m_tEnemies.splice(j, 1);
+						m_tSFXhurt.play();
 						break;
 					}
 				}
@@ -291,6 +289,7 @@ package states
 								s_layerForeground.remove(m_tEnemies[j]);
 								s_layerSuperForeground.remove(m_tEnemies[j].m_tHackBar);
 								m_tEnemies.splice(j, 1);
+								m_tSFXhurt.play();
 								
 								m_tBullets[i].kill();
 								s_layerSuperForeground.remove(m_tBullets[i]);
@@ -313,6 +312,7 @@ package states
 									s_layerForeground.remove(m_tEnemies[j]);
 									s_layerSuperForeground.remove(m_tEnemies[j].m_tHackBar);
 									m_tEnemies.splice(j, 1);
+									m_tSFXhurt.play();
 									
 									m_tBullets[i].kill();
 									s_layerSuperForeground.remove(m_tBullets[i]);
@@ -323,6 +323,7 @@ package states
 								{
 									m_tEnemies[j].health -= 0.5;
 									m_tEnemies[j].m_tHackBar.alpha = (1 - m_tEnemies[j].health);
+									m_tSFXhurt.play();
 									
 									m_tBullets[i].kill();
 									s_layerSuperForeground.remove(m_tBullets[i]);
