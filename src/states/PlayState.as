@@ -16,7 +16,7 @@ package states
 	import org.flixel.FlxSprite;
 	import org.flixel.FlxState;
 	import org.flixel.FlxTilemap;
-	//import org.flixel.FlxText;
+	import org.flixel.FlxText;
 	import org.flixel.FlxU;
 	
 	import Enemy;
@@ -25,7 +25,7 @@ package states
 	public class PlayState extends FlxState
 	{	
 		//Flex v4.x SDK only:
-		//[Embed(source = "../../data/font/Robotaur Condensed.ttf", fontFamily = "Robotaur", embedAsCFF = "false")] protected var junk:String;
+		[Embed(source = "../../data/font/Robotaur Condensed.ttf", fontFamily = "Robotaur", embedAsCFF = "false")] protected var junk:String;
 
 		// Map data
 		[Embed(source = '../../data/world/tiles_main.png')] private var imgTilesMain:Class;
@@ -53,6 +53,11 @@ package states
 		static private var s_layerPlayer:FlxGroup;				// Player
 		static private var s_layerForeground:FlxGroup;			// Robots
 		static private var s_layerSuperForeground:FlxGroup;		// Bullets, indicators
+		
+		private var m_iNumKills:int = 0;
+		private var m_bEndScreen:Boolean = false;	// Game over
+		private var m_tEndText:FlxText;
+		private var m_bTriggerEndText:Boolean = false;
 		
 		private var m_tMapMain:FlxTilemap;
 		private var m_tFloor:FlxSprite;
@@ -126,6 +131,26 @@ package states
 		
 		override public function update():void
 		{
+			if (m_bEndScreen)
+			{
+				// HIJAAAACK
+				if (m_bTriggerEndText)
+				{
+					// Score text
+					var szText:String = new String;
+					szText = szText.concat("You were annihilated after disabling ", m_iNumKills, " machines (hit SPACE to play again)");
+					
+					m_tEndText = new FlxText(0, FlxG.height * 0.5 -32, FlxG.width, szText);
+					m_tEndText.setFormat("Robotaur", 24, 0xFF00FF00, "center"); m_tEndText.shadow = 0xFF000000;
+					s_layerSuperForeground.add(m_tEndText);
+					
+					m_bTriggerEndText = false;
+				}
+				
+				if(FlxG.keys.SPACE)
+					FlxG.state = new PlayState();
+			}
+			
 			// Spawn enemies
 			if	(m_fWaveTimer > m_fWaveDuration)
 			{
@@ -183,6 +208,7 @@ package states
 						s_layerSuperForeground.remove(m_tEnemies[j].m_tHackBar);
 						m_tEnemies.splice(j, 1);
 						m_tSFXhurt.play();
+						m_iNumKills++;
 						break;
 					}
 				}
@@ -272,6 +298,8 @@ package states
 					
 					m_tPlayer.kill();
 					m_tSFXhurt.play();
+					m_bEndScreen = true;
+					m_bTriggerEndText = true;
 					break;
 				}
 				else
@@ -290,6 +318,7 @@ package states
 								s_layerSuperForeground.remove(m_tEnemies[j].m_tHackBar);
 								m_tEnemies.splice(j, 1);
 								m_tSFXhurt.play();
+								m_iNumKills++;
 								
 								m_tBullets[i].kill();
 								s_layerSuperForeground.remove(m_tBullets[i]);
@@ -313,6 +342,7 @@ package states
 									s_layerSuperForeground.remove(m_tEnemies[j].m_tHackBar);
 									m_tEnemies.splice(j, 1);
 									m_tSFXhurt.play();
+									m_iNumKills++;
 									
 									m_tBullets[i].kill();
 									s_layerSuperForeground.remove(m_tBullets[i]);
@@ -339,16 +369,16 @@ package states
 			super.update();
 		}
 		
-		public function spawnWaves():void
+		private function spawnWaves():void
 		{
 			if (m_tEnemies.length >= k_iMaxRobots)
 				return;
 			
 			var fEntryPoint:Number = (FlxU.random() * 4);
 			var iEntryPoint:int = 0;
-			if (fEntryPoint >= 1.0)			iEntryPoint = 1;	// Bleeurgh
+			if (fEntryPoint >= 3.0)			iEntryPoint = 3;	// Bleeurgh
 			else if (fEntryPoint >= 2.0)	iEntryPoint = 2;
-			else if (fEntryPoint >= 3.0)	iEntryPoint = 3;
+			else if (fEntryPoint >= 1.0)	iEntryPoint = 1;
 			
 			m_tEnemies.push(new Enemy(m_tEntryPoints[iEntryPoint].x, m_tEntryPoints[iEntryPoint].y));
 			

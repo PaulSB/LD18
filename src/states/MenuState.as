@@ -16,18 +16,18 @@ package states
 	{	
 		//Flex v4.x SDK only:
 		[Embed(source = "../../data/font/Robotaur Condensed.ttf", fontFamily = "Robotaur", embedAsCFF = "false")] protected var junk:String;
-		
+
 		override public function create():void
 		{
 			// Title text
-			var tTxt:FlxText
-			tTxt = new FlxText(0, FlxG.height/2 -48, FlxG.width, "The Robots and I")
-			tTxt.setFormat("Robotaur", 48, 0xFFFFFFFF, "center")
+			var tTxt:FlxText;
+			tTxt = new FlxText(0, FlxG.height / 2 -48, FlxG.width, "The Robots and I");
+			tTxt.setFormat("Robotaur", 48, 0xFF00FF00, "center");
 			this.add(tTxt);
 			
 			// Instruction text
-			tTxt = new FlxText(0, FlxG.height -48, FlxG.width, "Press SPACE to continue")
-			tTxt.setFormat("Robotaur", 24, 0xFFFFFFFF, "center");
+			tTxt = new FlxText(0, FlxG.height -96, FlxG.width, "Press SPACE to continue");
+			tTxt.setFormat("Robotaur", 24, 0xFF80FF80, "center");
 			this.add(tTxt);
 		}
 		
